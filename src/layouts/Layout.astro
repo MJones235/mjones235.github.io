@@ -1,35 +1,53 @@
 ---
+import '@fontsource-variable/inter';
 import '../styles/global.css';
+import { site } from '../data/site';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
   title: string;
+  description?: string;
+  ogImage?: string;
 }
 
-const { title } = Astro.props;
+const { title, description, ogImage } = Astro.props;
+
+const pageTitle = title === site.name ? site.name : `${title} · ${site.name}`;
+const metaDescription = description ?? site.tagline;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
+    <title>{pageTitle}</title>
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonical} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
   </head>
   <body>
-    <main>
-      <header>
-        <nav aria-label="Primary">
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/cv">CV</a></li>
-            <li><a href="/projects">Projects</a></li>
-            <li><a href="/publications">Publications</a></li>
-            <li><a href="/blog">Blog</a></li>
-          </ul>
-        </nav>
-      </header>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader />
+    <main id="main">
       <slot />
     </main>
+    <SiteFooter />
   </body>
 </html>

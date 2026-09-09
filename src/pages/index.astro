@@ -1,51 +1,319 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
+import ProfileLinks from '../components/ProfileLinks.astro';
+import { site } from '../data/site';
+import { recent } from '../data/recent';
 
-const sections = [
+// Conditionally resolve the headshot so the build works with or without it.
+const photoModules = import.meta.glob('../assets/michael-jones.{jpg,jpeg,png,webp}', {
+  eager: true,
+});
+const photoEntry = Object.values(photoModules)[0] as { default: ImageMetadata } | undefined;
+const photo = photoEntry?.default;
+
+const cards = [
   {
-    href: '/cv',
-    title: 'Curriculum Vitae',
-    body: 'Outline academic history, professional experience, and selected skills.',
-  },
-  {
+    eyebrow: 'Research',
+    title: 'LLM-enhanced evacuation simulation',
+    body: 'My PhD couples SUMO and JuPedSim to model how people leave a building or transport hub under emergency conditions, and asks where language models can improve the behavioural layer of those agents. The current case study is Monument Metro Station in Newcastle, validated against Proulx’s 1991 empirical evacuation data.',
     href: '/projects',
-    title: 'Projects',
-    body: 'Reserve space for highlighted work, case studies, and demos.',
+    linkLabel: 'Projects',
   },
   {
+    eyebrow: 'Engineering',
+    title: 'EROMS at Evolution',
+    body: 'I build features for a SaaS platform used to manage fire safety compliance and live emergency incidents. Recent work spans identity migration, Azure deployment pipelines, and data protection compliance.',
+    href: '/cv',
+    linkLabel: 'CV',
+  },
+  {
+    eyebrow: 'Writing',
+    title: 'Papers and talks',
+    body: 'Peer-reviewed work on synthetic population generation and agent-based evacuation modelling, presented at the Social Simulation Conference and the SUMO User Conference.',
     href: '/publications',
-    title: 'Publications',
-    body: 'List articles, papers, talks, and other writing with full citations.',
-  },
-  {
-    href: '/blog',
-    title: 'Blog',
-    body: 'Prepare room for future posts on research, engineering, or professional updates.',
+    linkLabel: 'Publications',
   },
 ];
+
+const months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+const formatDate = (value: string) => {
+  const [year, month] = value.split('-');
+  return month ? `${months[Number(month) - 1]} ${year}` : year;
+};
+
+const recentEntries = [...recent].sort((a, b) => (a.date < b.date ? 1 : -1));
 ---
 
-<Layout title="MJones235 | Professional Website">
-  <div class="hero">
-    <p>Professional website scaffold</p>
-    <h1>Placeholder Name</h1>
-    <p>
-      Add a short professional bio here. This space can introduce your role, areas of expertise,
-      and the themes visitors will find across your profile, CV, projects, and publications.
-    </p>
-    <p>
-      Replace this placeholder content with your real details, contact links, and featured work as
-      the site evolves.
-    </p>
-  </div>
+<Layout title={site.name}>
+  <div class="page">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-name">
+      <div class="hero-text stack">
+        <div class="hero-heading">
+          <h1 id="hero-name">{site.name}</h1>
+          <p class="role">{site.role}</p>
+        </div>
+        <p>
+          I research how large language models can improve agent-based evacuation
+          simulation, as part of the EPSRC Centre for Doctoral Training in Geospatial
+          Systems at Newcastle University. Alongside the PhD I work as a software engineer
+          at Evolution, building EROMS — a SaaS platform for fire safety and emergency
+          incident management.
+        </p>
+        <p>
+          My background is in physics. I&rsquo;m interested in work where simulation and
+          software meet real operational decisions — evacuation planning, emergency
+          response, and the systems people actually rely on during an incident.
+        </p>
 
-  <div class="card-grid">
-    {sections.map((section) => (
-      <article class="card">
-        <h2>{section.title}</h2>
-        <p>{section.body}</p>
-        <a href={section.href}>Open section</a>
-      </article>
-    ))}
+        <ul class="affiliations">
+          {
+            site.affiliations.map((aff) => (
+              <li>
+                {aff.href && !aff.href.startsWith('TODO') ? (
+                  <a href={aff.href} rel="noopener" target="_blank">
+                    {aff.name}
+                  </a>
+                ) : (
+                  <span class="aff-name">{aff.name}</span>
+                )}
+                <span class="aff-detail"> — {aff.detail}</span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <ProfileLinks size="md" />
+      </div>
+
+      {
+        photo && (
+          <div class="hero-photo">
+            <Image
+              src={photo}
+              alt=""
+              width={360}
+              height={360}
+              densities={[1, 2]}
+              loading="eager"
+            />
+          </div>
+        )
+      }
+    </section>
+
+    <!-- What I'm working on -->
+    <section class="work" aria-labelledby="work-heading">
+      <h2 id="work-heading">What I&rsquo;m working on</h2>
+      <div class="card-grid">
+        {
+          cards.map((card) => (
+            <article class="work-card stack">
+              <p class="eyebrow">{card.eyebrow}</p>
+              <h3>{card.title}</h3>
+              <p class="work-body">{card.body}</p>
+              <p class="work-link">
+                <a href={card.href}>{card.linkLabel} →</a>
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Recent -->
+    <section class="recent" aria-labelledby="recent-heading">
+      <h2 id="recent-heading">Recent</h2>
+      <ul class="recent-list">
+        {
+          recentEntries.map((entry) => (
+            <li>
+              <time class="recent-date" datetime={entry.date}>
+                {formatDate(entry.date)}
+              </time>
+              <span class="recent-title">
+                {entry.href ? (
+                  <a href={entry.href} rel="noopener" target="_blank">
+                    {entry.title}
+                  </a>
+                ) : (
+                  entry.title
+                )}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
   </div>
 </Layout>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+
+  /* Hero */
+  .hero {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .hero-text {
+    --stack-space: var(--space-md);
+    max-width: var(--measure);
+  }
+
+  .hero-heading h1 {
+    margin-block-end: var(--space-2xs);
+  }
+
+  .role {
+    color: var(--fg-muted);
+    font-size: var(--step-1);
+  }
+
+  .affiliations {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2xs);
+    font-size: var(--step--1);
+    color: var(--fg-muted);
+  }
+
+  .affiliations .aff-name {
+    color: var(--fg);
+    font-weight: 500;
+  }
+
+  .affiliations a {
+    font-weight: 500;
+  }
+
+  .hero-photo img {
+    width: min(100%, 18rem);
+    height: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  @media (min-width: 48rem) {
+    .hero {
+      grid-template-columns: 3fr 2fr;
+      gap: var(--space-2xl);
+      align-items: center;
+    }
+
+    .hero-photo {
+      order: 2;
+    }
+
+    .hero-photo img {
+      width: 100%;
+      max-width: 360px;
+      margin-inline-start: auto;
+    }
+  }
+
+  /* What I'm working on */
+  .card-grid {
+    margin-block-start: var(--space-lg);
+    display: grid;
+    gap: var(--space-md);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+
+  .work-card {
+    --stack-space: var(--space-sm);
+    padding: var(--space-lg);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 150ms ease;
+  }
+
+  .work-card:hover {
+    border-color: var(--accent);
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .work-body {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    line-height: 1.55;
+  }
+
+  .work-link a {
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--step--1);
+  }
+
+  .work-link a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Recent */
+  .recent-list {
+    margin-block-start: var(--space-md);
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .recent-list li {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: var(--space-md);
+    align-items: baseline;
+    padding-block: var(--space-2xs);
+    border-block-start: 1px solid var(--border);
+  }
+
+  .recent-list li:first-child {
+    border-block-start: 0;
+  }
+
+  .recent-date {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .recent-title a {
+    text-decoration: none;
+  }
+
+  .recent-title a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  @media (max-width: 30rem) {
+    .recent-list li {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xs);
+    }
+  }
+</style>
