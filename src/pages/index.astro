@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const sections = [
+  {
+    href: '/cv',
+    title: 'Curriculum Vitae',
+    body: 'Outline academic history, professional experience, and selected skills.',
+  },
+  {
+    href: '/projects',
+    title: 'Projects',
+    body: 'Reserve space for highlighted work, case studies, and demos.',
+  },
+  {
+    href: '/publications',
+    title: 'Publications',
+    body: 'List articles, papers, talks, and other writing with full citations.',
+  },
+  {
+    href: '/blog',
+    title: 'Blog',
+    body: 'Prepare room for future posts on research, engineering, or professional updates.',
+  },
+];
+---
+
+<Layout title="MJones235 | Professional Website">
+  <div class="hero">
+    <p>Professional website scaffold</p>
+    <h1>Placeholder Name</h1>
+    <p>
+      Add a short professional bio here. This space can introduce your role, areas of expertise,
+      and the themes visitors will find across your profile, CV, projects, and publications.
+    </p>
+    <p>
+      Replace this placeholder content with your real details, contact links, and featured work as
+      the site evolves.
+    </p>
+  </div>
+
+  <div class="card-grid">
+    {sections.map((section) => (
+      <article class="card">
+        <h2>{section.title}</h2>
+        <p>{section.body}</p>
+        <a href={section.href}>Open section</a>
+      </article>
+    ))}
+  </div>
+</Layout>
