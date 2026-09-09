@@ -1,0 +1,103 @@
+---
+import { site } from '../data/site';
+
+const nav = [
+  { href: '/', label: 'Home' },
+  { href: '/cv', label: 'CV' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/publications', label: 'Publications' },
+  { href: '/blog', label: 'Blog' },
+];
+
+const normalize = (path: string) => {
+  const trimmed = path.replace(/\/+$/, '');
+  return trimmed === '' ? '/' : trimmed;
+};
+
+const current = normalize(Astro.url.pathname);
+---
+
+<header class="site-header">
+  <div class="container inner">
+    <a class="wordmark" href="/">{site.name}</a>
+    <nav aria-label="Primary">
+      <ul>
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={normalize(item.href) === current ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-block-end: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-xs) var(--space-lg);
+    padding-block: var(--space-md);
+  }
+
+  .wordmark {
+    color: var(--fg);
+    font-weight: 600;
+    font-size: var(--step-1);
+    letter-spacing: -0.015em;
+    text-decoration: none;
+  }
+
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-lg);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  nav a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+
+  nav a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--fg);
+  }
+
+  @media (max-width: 40rem) {
+    .inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    nav {
+      width: 100%;
+    }
+  }
+</style>
