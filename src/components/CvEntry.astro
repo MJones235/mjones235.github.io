@@ -1,0 +1,176 @@
+---
+import type { CvEntry } from '../data/cv';
+import { formatRange } from '../utils/date';
+
+interface Props {
+  entry: CvEntry;
+  variant?: 'compact';
+}
+
+const { entry, variant } = Astro.props;
+const compact = variant === 'compact';
+const dateParts = formatRange(entry);
+const points = entry.points?.slice(0, 4);
+---
+
+<div class:list={['cv-entry', { 'is-compact': compact }]}>
+  {/* Date first in the DOM so reading order matches the visual order. */}
+  <p class="cv-date">
+    {
+      dateParts.map((part, i) => (
+        <>
+          {i > 0 && <span aria-hidden="true">–</span>}
+          {part.datetime ? (
+            <time datetime={part.datetime}>{part.text}</time>
+          ) : (
+            <span>{part.text}</span>
+          )}
+        </>
+      ))
+    }
+  </p>
+
+  <div class="cv-body">
+    <h3 class="cv-title">
+      <span class="cv-role">{entry.title}</span>
+      <span class="cv-org">
+        {', '}
+        {entry.orgHref && !entry.orgHref.startsWith('TODO') ? (
+          <a href={entry.orgHref} rel="noopener" target="_blank">
+            {entry.org}
+          </a>
+        ) : (
+          entry.org
+        )}
+        {entry.location && <span class="cv-location">, {entry.location}</span>}
+      </span>
+    </h3>
+
+    {entry.summary && <p class="cv-summary">{entry.summary}</p>}
+
+    {
+      points && points.length > 0 && (
+        <ul class="cv-points">
+          {points.map((point) => (
+            <li>{point}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      !compact && entry.tags && entry.tags.length > 0 && (
+        <ul class="cv-tags" aria-label="Technologies">
+          {entry.tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .cv-entry {
+    padding-block: var(--space-lg);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .cv-entry:last-child {
+    border-block-end: 0;
+  }
+
+  .cv-date {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: var(--space-2xs);
+  }
+
+  .cv-date span[aria-hidden] {
+    margin-inline: 0.15em;
+  }
+
+  .cv-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .cv-title {
+    font-size: var(--step-0);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: normal;
+  }
+
+  .cv-org {
+    color: var(--fg-muted);
+    font-weight: 400;
+  }
+
+  .cv-org a {
+    color: var(--fg-muted);
+    text-decoration-thickness: 1px;
+  }
+
+  .cv-org a:hover {
+    color: var(--accent);
+  }
+
+  .cv-summary {
+    max-width: var(--measure);
+    color: var(--fg);
+  }
+
+  .cv-points {
+    max-width: var(--measure);
+    margin: 0;
+    padding-inline-start: 1.1em;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    line-height: 1.4;
+  }
+
+  .cv-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .cv-tags li {
+    font-size: var(--step--1);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1em 0.7em;
+    line-height: 1.4;
+  }
+
+  /* Compact variant — A Levels, GCSEs, volunteering. */
+  .is-compact .cv-title {
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+
+  /* Date rail from 48rem up. Date stays first in the DOM; the grid places it
+     in the left column with no absolute positioning or `order`. */
+  @media (min-width: 48rem) {
+    .cv-entry {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .cv-date {
+      margin-block-end: 0;
+      /* Nudge the rail to sit with the title baseline. */
+      padding-block-start: 0.15em;
+    }
+  }
+</style>

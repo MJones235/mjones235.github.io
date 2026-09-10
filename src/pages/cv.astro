@@ -1,16 +1,315 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ProfileLinks from '../components/ProfileLinks.astro';
+import CvEntry from '../components/CvEntry.astro';
+import OnThisPage from '../components/OnThisPage.astro';
+import { site } from '../data/site';
+import {
+  profile,
+  experience,
+  education,
+  skills,
+  publications,
+  volunteering,
+  lastUpdated,
+} from '../data/cv';
+import { formatMonth, formatMonthShort } from '../utils/date';
+
+const sections = [
+  { id: 'profile', heading: 'Profile' },
+  { id: 'experience', heading: 'Experience' },
+  { id: 'education', heading: 'Education' },
+  { id: 'skills', heading: 'Skills' },
+  { id: 'publications', heading: 'Publications' },
+  { id: 'volunteering', heading: 'Volunteering' },
+];
+
+const description =
+  'Curriculum vitae of Michael Jones — PhD researcher in evacuation simulation at Newcastle University and software engineer at Evolution Risk Assurance.';
+
+// Reduced visual weight for the two school qualifications (A Levels, GCSEs),
+// which sit at the end of the education list.
+const isSchool = (index: number) => index >= education.length - 2;
+
+// Person JSON-LD, built from site.ts + cv.ts so it cannot drift from the page.
+const sameAs = Object.values(site.links).filter((v) => v !== 'TODO');
+const affiliation = site.affiliations.map((a) => ({
+  '@type': 'Organization',
+  name: a.name,
+  ...(a.href && !a.href.startsWith('TODO') ? { url: a.href } : {}),
+}));
+const alumniOf = [...new Set(education.slice(0, 4).map((e) => e.org))].map((name) => ({
+  '@type': 'EducationalOrganization',
+  name,
+}));
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  url: new URL('/', Astro.site).href,
+  sameAs,
+  jobTitle: site.role,
+  affiliation,
+  alumniOf,
+};
 ---
 
-<Layout title="CV">
-  <section>
+<Layout title="CV" description={description}>
+  <script type="application/ld+json" set:html={JSON.stringify(personLd)} />
+
+  <div class="cv-head">
     <h1>Curriculum Vitae</h1>
-    <p>This page is reserved for a concise CV or résumé overview.</p>
-    <ul>
-      <li>Professional summary placeholder</li>
-      <li>Employment history placeholder</li>
-      <li>Education placeholder</li>
-      <li>Skills and certifications placeholder</li>
-    </ul>
-  </section>
+    <p class="cv-meta">
+      Last updated {formatMonth(lastUpdated)} · {site.name} · {site.location}
+    </p>
+    <ProfileLinks size="sm" />
+  </div>
+
+  <div class="cv-layout">
+    <OnThisPage sections={sections} />
+
+    <div class="cv-content">
+      <section id="profile" class="cv-section" aria-labelledby="profile-h">
+        <h2 id="profile-h">Profile</h2>
+        <div class="prose">
+          {profile.map((para) => <p>{para}</p>)}
+        </div>
+      </section>
+
+      <section id="experience" class="cv-section" aria-labelledby="experience-h">
+        <h2 id="experience-h">Experience</h2>
+        <div class="entries">
+          {experience.map((entry) => <CvEntry entry={entry} />)}
+        </div>
+      </section>
+
+      <section id="education" class="cv-section" aria-labelledby="education-h">
+        <h2 id="education-h">Education</h2>
+        <div class="entries">
+          {
+            education.map((entry, i) => (
+              <CvEntry entry={entry} variant={isSchool(i) ? 'compact' : undefined} />
+            ))
+          }
+        </div>
+      </section>
+
+      <p class="projects-pointer prose">
+        Selected research projects — sample-free population synthesis, LLM-driven
+        behavioural modelling for evacuation, and housing submarket identification —
+        are written up on the <a href="/projects">projects page</a>.
+      </p>
+
+      <section id="skills" class="cv-section" aria-labelledby="skills-h">
+        <h2 id="skills-h">Skills</h2>
+        <dl class="skills">
+          {
+            skills.map((group) => (
+              <div class="skill-row">
+                <dt>{group.label}</dt>
+                <dd>{group.items.join(', ')}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+
+      <section id="publications" class="cv-section" aria-labelledby="publications-h">
+        <h2 id="publications-h">Publications</h2>
+        <ul class="pub-list">
+          {
+            publications.map((pub) => (
+              <li class="pub">
+                <p class="pub-year">
+                  <time datetime={pub.date}>{formatMonthShort(pub.date)}</time>
+                </p>
+                <div class="pub-body">
+                  <p class="pub-title">
+                    <span class="pub-name">{pub.title}</span>
+                    {pub.venue && <span class="pub-venue">, {pub.venue}</span>}
+                  </p>
+                  {pub.href && (
+                    <p class="pub-doi">
+                      <a href={pub.href} rel="noopener" target="_blank">
+                        DOI: {pub.href.replace('https://doi.org/', '')}
+                      </a>
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="pub-all">
+          <a href="/publications">See all publications →</a>
+        </p>
+      </section>
+
+      <section id="volunteering" class="cv-section" aria-labelledby="volunteering-h">
+        <h2 id="volunteering-h">Volunteering</h2>
+        <div class="entries">
+          {volunteering.map((entry) => <CvEntry entry={entry} variant="compact" />)}
+        </div>
+      </section>
+    </div>
+  </div>
 </Layout>
+
+<style>
+  .cv-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-block-end: var(--space-2xl);
+  }
+
+  .cv-meta {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+  }
+
+  .cv-layout {
+    display: grid;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+
+  .cv-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+    min-width: 0;
+  }
+
+  .cv-section {
+    scroll-margin-top: var(--space-xl);
+  }
+
+  .cv-section > h2 {
+    margin-block-end: var(--space-md);
+  }
+
+  .prose {
+    max-width: var(--measure);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .projects-pointer {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+  }
+
+  /* Skills as label/value pairs, aligned with the entry date rail above. */
+  .skills {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .skill-row dt {
+    font-weight: 600;
+    font-size: var(--step--1);
+    margin-block-end: var(--space-2xs);
+  }
+
+  .skill-row dd {
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  /* Publications share the entry date-rail rhythm. */
+  .pub-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pub {
+    padding-block: var(--space-lg);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .pub:last-child {
+    border-block-end: 0;
+  }
+
+  .pub-year {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: var(--space-2xs);
+  }
+
+  .pub-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    max-width: var(--measure);
+  }
+
+  .pub-name {
+    font-style: italic;
+  }
+
+  .pub-venue {
+    color: var(--fg-muted);
+  }
+
+  .pub-doi {
+    font-size: var(--step--1);
+  }
+
+  .pub-all {
+    margin-block-start: var(--space-md);
+    font-size: var(--step--1);
+  }
+
+  .pub-all a {
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .pub-all a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Label rail alignment from 48rem up (matches CvEntry's 9rem date rail). */
+  @media (min-width: 48rem) {
+    .skill-row {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-lg);
+      align-items: baseline;
+    }
+
+    .skill-row dt {
+      margin-block-end: 0;
+    }
+
+    .pub {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .pub-year {
+      margin-block-end: 0;
+      padding-block-start: 0.15em;
+    }
+  }
+
+  /* Two-column page with a sticky nav rail once there is room. */
+  @media (min-width: 64rem) {
+    .cv-layout {
+      grid-template-columns: 12rem 1fr;
+    }
+  }
+</style>

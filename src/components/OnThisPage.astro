@@ -1,0 +1,57 @@
+---
+interface Props {
+  sections: { id: string; heading: string }[];
+}
+
+const { sections } = Astro.props;
+---
+
+<nav class="on-this-page" aria-label="On this page">
+  <ul>
+    {
+      sections.map((section) => (
+        <li>
+          <a href={`#${section.id}`}>{section.heading}</a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .on-this-page ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-lg);
+  }
+
+  .on-this-page a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+
+  .on-this-page a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Sticky left rail once there is room for a two-column page layout. */
+  @media (min-width: 64rem) {
+    .on-this-page {
+      position: sticky;
+      top: var(--space-lg);
+    }
+
+    .on-this-page ul {
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+  }
+</style>
