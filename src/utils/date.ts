@@ -56,6 +56,11 @@ export function formatRange(entry: { start: string; end: string }): DatePart[] {
     return [{ text: label(s), datetime: s.iso }, { text: 'present' }];
   }
 
+  // Single point in time (start === end), e.g. a one-month project.
+  if (entry.start === entry.end) {
+    return [{ text: label(s), datetime: s.iso }];
+  }
+
   const e = parse(entry.end);
   const sameYear = e.year === s.year;
   const bothMonths = s.month != null && e.month != null;
