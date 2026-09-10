@@ -12,12 +12,12 @@ export interface RecentEntry {
 // Verify the months against the actual events before publishing.
 export const recent: RecentEntry[] = [
   {
-    date: '2026-09',
+    date: '2026-07',
     title: 'Presented at the Social Simulation Conference, Delft',
     kind: 'talk',
   },
   {
-    date: '2026-07',
+    date: '2026-06',
     title: 'Presented at the SUMO User Conference, Berlin',
     kind: 'talk',
   },
