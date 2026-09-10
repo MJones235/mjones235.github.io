@@ -1,15 +1,112 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { publications } from '../data/cv';
+import { formatMonthShort } from '../utils/date';
+
+const description =
+  'Publications and presentations by Michael Jones on synthetic population synthesis and agent-based evacuation modelling.';
 ---
 
-<Layout title="Publications">
-  <section>
+<Layout title="Publications" description={description}>
+  <div class="head">
     <h1>Publications</h1>
-    <p>This page can list publications, reports, talks, or notable writing.</p>
-    <ul>
-      <li>Publication citation placeholder</li>
-      <li>Conference talk placeholder</li>
-      <li>Article or blog series placeholder</li>
-    </ul>
-  </section>
+    <p class="lede">
+      Peer-reviewed papers and conference presentations. The underlying research is
+      written up on the <a href="/projects">projects page</a>.
+    </p>
+  </div>
+
+  <ul class="pub-list">
+    {
+      publications.map((pub) => (
+        <li class="pub">
+          <p class="pub-date">
+            <time datetime={pub.date}>{formatMonthShort(pub.date)}</time>
+          </p>
+          <div class="pub-body">
+            <p class="pub-title">
+              <span class="pub-name">{pub.title}</span>
+              {pub.venue && <span class="pub-venue">, {pub.venue}</span>}
+            </p>
+            {pub.href && (
+              <p class="pub-doi">
+                <a href={pub.href} rel="noopener" target="_blank">
+                  DOI: {pub.href.replace('https://doi.org/', '')}
+                </a>
+              </p>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ul>
 </Layout>
+
+<style>
+  .head {
+    margin-block-end: var(--space-2xl);
+  }
+
+  .lede {
+    margin-block-start: var(--space-sm);
+    max-width: var(--measure);
+    color: var(--fg-muted);
+  }
+
+  .pub-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pub {
+    padding-block: var(--space-lg);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .pub:last-child {
+    border-block-end: 0;
+  }
+
+  .pub-date {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: var(--space-2xs);
+  }
+
+  .pub-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    max-width: var(--measure);
+  }
+
+  .pub-name {
+    font-style: italic;
+  }
+
+  .pub-venue {
+    color: var(--fg-muted);
+  }
+
+  .pub-doi {
+    font-size: var(--step--1);
+  }
+
+  @media (min-width: 48rem) {
+    .pub {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .pub-date {
+      margin-block-end: 0;
+      padding-block-start: 0.2em;
+    }
+  }
+</style>

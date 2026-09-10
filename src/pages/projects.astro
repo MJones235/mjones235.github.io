@@ -1,15 +1,164 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { projects } from '../data/projects';
+import { formatRange } from '../utils/date';
+
+const description =
+  'Selected research projects by Michael Jones — synthetic population synthesis, LLM-driven behavioural modelling for evacuation, and housing submarket identification.';
 ---
 
-<Layout title="Projects">
-  <section>
+<Layout title="Projects" description={description}>
+  <div class="head">
     <h1>Projects</h1>
-    <p>Use this page to feature selected projects with outcomes, technologies, and links.</p>
-    <ul>
-      <li>Project title placeholder</li>
-      <li>Project summary placeholder</li>
-      <li>Project impact placeholder</li>
-    </ul>
-  </section>
+    <p class="lede">
+      Selected research projects, mostly from my PhD on large language models for
+      agent-based evacuation simulation. Related peer-reviewed work is on the
+      <a href="/publications">publications page</a>.
+    </p>
+  </div>
+
+  <ul class="entries">
+    {
+      projects.map((project) => {
+        const dateParts = formatRange(project);
+        return (
+          <li class="entry">
+            <p class="entry-date">
+              {dateParts.map((part, i) => (
+                <>
+                  {i > 0 && <span aria-hidden="true">–</span>}
+                  {part.datetime ? (
+                    <time datetime={part.datetime}>{part.text}</time>
+                  ) : (
+                    <span>{part.text}</span>
+                  )}
+                </>
+              ))}
+            </p>
+            <div class="entry-body">
+              <h2 class="entry-title">{project.title}</h2>
+              <p class="entry-summary">{project.summary}</p>
+              {project.tags && project.tags.length > 0 && (
+                <ul class="tags" aria-label="Technologies">
+                  {project.tags.map((tag) => (
+                    <li>{tag}</li>
+                  ))}
+                </ul>
+              )}
+              {project.href && (
+                <p class="entry-link">
+                  <a href={project.href} rel="noopener" target="_blank">
+                    {project.hrefLabel ?? 'Read more'} →
+                  </a>
+                </p>
+              )}
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
 </Layout>
+
+<style>
+  .head {
+    margin-block-end: var(--space-2xl);
+  }
+
+  .lede {
+    margin-block-start: var(--space-sm);
+    max-width: var(--measure);
+    color: var(--fg-muted);
+  }
+
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .entry {
+    padding-block: var(--space-lg);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .entry:last-child {
+    border-block-end: 0;
+  }
+
+  .entry-date {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: var(--space-2xs);
+  }
+
+  .entry-date span[aria-hidden] {
+    margin-inline: 0.15em;
+  }
+
+  .entry-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .entry-title {
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+
+  .entry-summary {
+    max-width: var(--measure);
+  }
+
+  .tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .tags li {
+    font-size: var(--step--1);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1em 0.7em;
+    line-height: 1.4;
+  }
+
+  .entry-link {
+    font-size: var(--step--1);
+  }
+
+  .entry-link a {
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .entry-link a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  @media (min-width: 48rem) {
+    .entry {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .entry-date {
+      margin-block-end: 0;
+      padding-block-start: 0.2em;
+    }
+  }
+</style>

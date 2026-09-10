@@ -1,15 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const description = 'Notes and writing by Michael Jones.';
 ---
 
-<Layout title="Blog">
-  <section>
+<Layout title="Blog" description={description}>
+  <div class="head">
     <h1>Blog</h1>
-    <p>Future posts can be added here once the site is ready for long-form content.</p>
-    <ul>
-      <li>Post topic placeholder</li>
-      <li>Draft ideas placeholder</li>
-      <li>Publishing workflow placeholder</li>
-    </ul>
-  </section>
+    <p class="empty">No posts yet — check back soon.</p>
+  </div>
 </Layout>
+
+<style>
+  .empty {
+    margin-block-start: var(--space-sm);
+    max-width: var(--measure);
+    color: var(--fg-muted);
+  }
+</style>
